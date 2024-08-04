@@ -1,5 +1,6 @@
-import type { SVGProps } from 'react'
+import type { Todo } from '@prisma/client'
 
+import { useEffect, useState, type SVGProps } from 'react'
 import * as Checkbox from '@radix-ui/react-checkbox'
 
 import { api } from '@/utils/client/api'
@@ -64,31 +65,127 @@ import { api } from '@/utils/client/api'
  */
 
 export const TodoList = () => {
-  const { data: todos = [] } = api.todo.getAll.useQuery({
+  const { data: todos = [], refetch } = api.todo.getAll.useQuery({
     statuses: ['completed', 'pending'],
   })
 
-  return (
-    <ul className="grid grid-cols-1 gap-y-3">
-      {todos.map((todo) => (
-        <li key={todo.id}>
-          <div className="flex items-center rounded-12 border border-gray-200 px-4 py-3 shadow-sm">
-            <Checkbox.Root
-              id={String(todo.id)}
-              className="flex h-6 w-6 items-center justify-center rounded-6 border border-gray-300 focus:border-gray-700 focus:outline-none data-[state=checked]:border-gray-700 data-[state=checked]:bg-gray-700"
-            >
-              <Checkbox.Indicator>
-                <CheckIcon className="h-4 w-4 text-white" />
-              </Checkbox.Indicator>
-            </Checkbox.Root>
+  const [status, setStatus] = useState<{ completed: Todo[]; pending: Todo[] }>({
+    completed: [],
+    pending: [],
+  })
+  const [filter, setFilter] = useState('all')
 
-            <label className="block pl-3 font-medium" htmlFor={String(todo.id)}>
-              {todo.body}
-            </label>
-          </div>
-        </li>
-      ))}
-    </ul>
+  // API delete todo
+  const { mutate: deleteTodo } = api.todo.delete.useMutation({
+    onSuccess: () => {
+      refetch()
+    },
+  })
+  // API update todo status
+  const { mutate: updateTodoStatus } = api.todoStatus.update.useMutation({
+    onSuccess: () => {
+      refetch()
+    },
+  })
+
+  useEffect(() => {
+    if (todos) {
+      const completedTodos = todos.filter((todo) => todo.status === 'completed')
+      const pendingTodos = todos.filter((todo) => todo.status === 'pending')
+      setStatus({
+        completed: completedTodos,
+        pending: pendingTodos,
+      })
+    }
+  }, [todos])
+
+  // Lọc todos dựa trên lựa chọn hiện tại
+  const filteredTodos =
+    filter === 'all'
+      ? todos
+      : filter === 'completed'
+      ? status.completed
+      : status.pending
+
+  return (
+    <div>
+      <div className="mb-4">
+        <button
+          className={`border mr-2 rounded-15 border-gray-300 bg-white px-4 py-2 ${
+            filter === 'all'
+              ? 'bg-[#334155] text-white'
+              : 'bg-white text-gray-900'
+          }`}
+          onClick={() => setFilter('all')}
+        >
+          All
+        </button>
+        <button
+          className={`border mr-2 rounded-15 border-gray-300 bg-white px-4 py-2 ${
+            filter === 'completed'
+              ? 'bg-[#334155] text-white'
+              : 'bg-white text-gray-900'
+          }`}
+          onClick={() => setFilter('completed')}
+        >
+          Completed
+        </button>
+        <button
+          className={`border rounded-15 border-gray-300 bg-white px-4 py-2 ${
+            filter === 'pending'
+              ? 'bg-[#334155] text-white'
+              : 'bg-white text-gray-900'
+          }`}
+          onClick={() => setFilter('pending')}
+        >
+          Pending
+        </button>
+      </div>
+
+      <ul className="grid grid-cols-1 gap-y-3">
+        {filteredTodos.map((todo) => (
+          <li key={todo.id}>
+            <div
+              className={`border flex items-center rounded-12 border-gray-200 px-4 py-3 shadow-sm ${
+                todo.status === 'completed' ? 'bg-gray-400' : 'bg-white'
+              }`}
+            >
+              <Checkbox.Root
+                checked={todo.status === 'completed'}
+                id={String(todo.id)}
+                onClick={() =>
+                  updateTodoStatus({ todoId: todo.id, status: 'completed' })
+                }
+                className="flex h-6 w-6 items-center justify-center rounded-6 border-1 border-gray-300 focus:border-gray-700 focus:outline-none data-[state=checked]:border-gray-700 data-[state=checked]:bg-gray-700"
+              >
+                <Checkbox.Indicator>
+                  <CheckIcon className="h-4 w-4 text-white" />
+                </Checkbox.Indicator>
+              </Checkbox.Root>
+
+              <label
+                className={`block pl-3 font-medium ${
+                  todo.status === 'completed'
+                    ? 'text-gray-500 line-through'
+                    : 'text-gray-900'
+                }`}
+                htmlFor={String(todo.id)}
+              >
+                {todo.body}
+              </label>
+
+              <button
+                className="ml-auto h-5 w-5 text-gray-500 hover:text-gray-700 focus:outline-none"
+                onClick={() => deleteTodo({ id: todo.id })}
+                aria-label="Delete todo"
+              >
+                <XMarkIcon />
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
   )
 }
 

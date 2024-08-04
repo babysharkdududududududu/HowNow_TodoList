@@ -21,11 +21,18 @@ export default {
       'gray-800': '#1e293b',
       'gray-900': '#0f172a',
       'gray-950': '#020617',
+      'gray-150': '#334155',
     },
     borderRadius: {
+      1: '1px',
       6: '6px',
       12: '12px',
+      15: '15px',
       full: '9999px',
+    },
+    borderWidth: {
+      '1': '1px',
+      '3': '3px', // Ví dụ: Thêm border-width là 3px
     },
   },
   plugins: [],

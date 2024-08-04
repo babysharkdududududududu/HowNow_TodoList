@@ -35,8 +35,21 @@ export const CreateTodoForm = () => {
       },
     })
 
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    if (todoBody.trim()) {
+      createTodo({
+        body: todoBody,
+      })
+      setTodoBody('')
+    }
+  }
+
   return (
-    <form className="group flex items-center justify-between rounded-12 border border-gray-200 py-2 pr-4 focus-within:border-gray-400">
+    <form
+      onSubmit={handleSubmit}
+      className="group flex items-center justify-between rounded-12 border border-gray-200 py-2 pr-4 focus-within:border-gray-400"
+    >
       <label htmlFor={TODO_INPUT_ID} className="sr-only">
         Add todo
       </label>
@@ -61,6 +74,7 @@ export const CreateTodoForm = () => {
           })
           setTodoBody('')
         }}
+        className="w-100 rounded-15 bg-gray-150 px-4 py-2 font-light text-white"
       >
         Add
       </button>
