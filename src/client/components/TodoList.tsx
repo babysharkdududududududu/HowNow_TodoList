@@ -155,7 +155,7 @@ export const TodoList = () => {
           <li key={todo.id}>
             <div
               className={`border flex items-center rounded-12 border-gray-200 px-4 py-3 shadow-sm ${
-                todo.status === 'completed' ? 'bg-gray-400' : 'bg-white'
+                todo.status === 'completed' ? 'bg-gray-50' : 'bg-white'
               }`}
             >
               <Checkbox.Root
