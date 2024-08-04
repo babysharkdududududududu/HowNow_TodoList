@@ -1,7 +1,8 @@
 import type { Todo } from '@prisma/client'
 
-import { useEffect, useState, type SVGProps } from 'react'
+import { useEffect, useRef, useState, type SVGProps } from 'react'
 import * as Checkbox from '@radix-ui/react-checkbox'
+import autoAnimate from '@formkit/auto-animate'
 
 import { api } from '@/utils/client/api'
 
@@ -87,6 +88,13 @@ export const TodoList = () => {
       refetch()
     },
   })
+  const parentRef = useRef(null)
+
+  useEffect(() => {
+    if (parentRef.current) {
+      autoAnimate(parentRef.current)
+    }
+  }, [parentRef])
 
   useEffect(() => {
     if (todos) {
@@ -111,7 +119,7 @@ export const TodoList = () => {
     <div>
       <div className="mb-4">
         <button
-          className={`border mr-2 rounded-15 border-gray-300 bg-white px-4 py-2 ${
+          className={`mr-2 rounded-15 border-1 border-gray-300 bg-white px-4 py-2 ${
             filter === 'all'
               ? 'bg-[#334155] text-white'
               : 'bg-white text-gray-900'
@@ -121,7 +129,7 @@ export const TodoList = () => {
           All
         </button>
         <button
-          className={`border mr-2 rounded-15 border-gray-300 bg-white px-4 py-2 ${
+          className={`mr-2 rounded-15 border-1 border-gray-300 bg-white px-4 py-2 ${
             filter === 'completed'
               ? 'bg-[#334155] text-white'
               : 'bg-white text-gray-900'
@@ -131,7 +139,7 @@ export const TodoList = () => {
           Completed
         </button>
         <button
-          className={`border rounded-15 border-gray-300 bg-white px-4 py-2 ${
+          className={`rounded-15 border-1 border-gray-300 bg-white px-4 py-2 ${
             filter === 'pending'
               ? 'bg-[#334155] text-white'
               : 'bg-white text-gray-900'
@@ -142,7 +150,7 @@ export const TodoList = () => {
         </button>
       </div>
 
-      <ul className="grid grid-cols-1 gap-y-3">
+      <ul className="grid grid-cols-1 gap-y-3" ref={parentRef}>
         {filteredTodos.map((todo) => (
           <li key={todo.id}>
             <div
@@ -151,8 +159,8 @@ export const TodoList = () => {
               }`}
             >
               <Checkbox.Root
-                checked={todo.status === 'completed'}
                 id={String(todo.id)}
+                checked={todo.status === 'completed'}
                 onClick={() =>
                   updateTodoStatus({ todoId: todo.id, status: 'completed' })
                 }
